@@ -15,7 +15,7 @@ router.use(express.json());
 /** RULES OF OUR API */
 router.use((req, res, next) => {
     // set the CORS policy
-    res.header('Access-Control-Allow-Origin', 'https://eth-arweave-base-generator.herokuapp.com');
+    res.header('Access-Control-Allow-Origin', '*');
     // set the CORS headers
     res.header('Access-Control-Allow-Headers', 'origin, X-Requested-With,Content-Type,Accept, Authorization');
     // set the CORS method headers
