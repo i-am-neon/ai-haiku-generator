@@ -1,9 +1,37 @@
 import http from 'http';
 import express, { Express } from 'express';
 import morgan from 'morgan';
+import mongoose, { CallbackError } from 'mongoose';
+import dotenv from 'dotenv';
+import passportLocal from 'passport-local';
+import passport from 'passport';
+import bcrypt from 'bcrypt';
 import routes from './routes/arweaveRoutes';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import User, { UserInterface } from './models/User';
+
+dotenv.config();
+
+if (!process.env.NODE_ENV || !process.env.SESSION_SECRET || !process.env.MONGO_CONNECTION_STRING) {
+    throw new Error("please set all env variables")
+}
+
+/** Connect to MongoDB */
+mongoose.connect(process.env.MONGO_CONNECTION_STRING, (error: CallbackError) => {
+    if (error) console.error(error);
+    console.log('Connected to MongoDB');
+});
 
 const router: Express = express();
+
+router.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true
+}));
+
+router.use(cookieParser(process.env.SESSION_SECRET));
 
 /** Logging */
 router.use(morgan('dev'));
@@ -36,6 +64,10 @@ router.use((req, res, next) => {
         message: error.message
     });
 });
+
+router.use(passport.initialize());
+router.use(passport.session);
+require('./passportConfig')(passport);
 
 /** Server */
 const httpServer = http.createServer(router);
