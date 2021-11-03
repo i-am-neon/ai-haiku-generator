@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "source/server.ts",
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "dev": "nodemon source/server.ts",
     "build": "rm -rf build/ && tsc",
