@@ -8,8 +8,7 @@ module.exports = function (passport: any) {
     const onAuth = async (address: string, done: any) => {
         // optional additional validation. To deny auth:
         // done(new Error('User is not authorized.'));
-        const hashedAddress = await bcrypt.hash(address, 10);
-        User.findOne({ hashedAddress }, (err: Error, user: UserInterface) => done(err, user));
+        User.findOne({ walletAddress: address }, (err: Error, user: UserInterface) => done(err, user));
     };
     const web3Strategy = new Web3Strategy(onAuth);
 

@@ -1,12 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import passport from 'passport';
-import bcrypt from 'bcrypt';
 import { recoverPersonalSignature } from 'eth-sig-util'
 import crypto from 'crypto';
 import Arweave from 'arweave';
-import User, { UserInterface } from '../models/User';
-import session from 'express-session';
-import { Document } from 'mongoose';
+import User from '../models/User';
 
 declare module 'express-session' {
     export interface SessionData {
@@ -18,9 +14,8 @@ const arweave = Arweave.init({ host: 'arweave.net' })
 
 const getNonce = async (req: Request, res: Response, next: NextFunction) => {
     const nonce = crypto.randomInt(111111, 999999);
-    const hashedWalletAddress = await bcrypt.hash(req.params.address, 10);
-
-    User.findOne({ hashedWalletAddress }, async (err: Error, doc: any) => {
+    const address = req.params.address;
+    User.findOne({ walletAddress: address }, async (err: Error, doc: any) => {
         if (err) {
             return res.status(401).json({
                 message: 'Login failed.'
@@ -31,9 +26,9 @@ const getNonce = async (req: Request, res: Response, next: NextFunction) => {
             doc.save();
         } else {
             // User does not yet exist. Create one
-            console.log('Creating mongo user for wallet: ' + req.params.address);
+            console.log('Creating mongo user for wallet: ' + address);
             const newUser = new User({
-                walletAddreess: hashedWalletAddress,
+                walletAddress: address,
                 nonce: nonce,
                 unsuccessfulMintTries: 0
             })
@@ -56,9 +51,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         });
     }
 
-    const hashedWalletAddress = await bcrypt.hash(req.body.address, 10);
     var nonce: number;
-    User.findOne({ hashedWalletAddress }, async (err: Error, doc: any) => {
+    User.findOne({ walletAddress: address }, async (err: Error, doc: any) => {
         if (err) {
             return res.status(401).json({
                 message: 'Login failed.'
