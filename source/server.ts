@@ -25,13 +25,13 @@ mongoose.connect(process.env.MONGO_CONNECTION_STRING, (error: CallbackError) => 
 
 const router: Express = express();
 
-router.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true
-}));
+// router.use(session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: true,
+//     saveUninitialized: true
+// }));
 
-router.use(cookieParser(process.env.SESSION_SECRET));
+// router.use(cookieParser(process.env.SESSION_SECRET));
 
 /** Logging */
 router.use(morgan('dev'));
@@ -66,9 +66,9 @@ router.use((req, res, next) => {
     });
 });
 
-router.use(passport.initialize());
-router.use(passport.session);
-require('./passportConfig')(passport);
+// router.use(passport.initialize());
+// router.use(passport.session);
+// require('./passportConfig')(passport);
 
 /** Server */
 const httpServer = http.createServer(router);
