@@ -82,7 +82,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
                 });
             }
         } else {
-            // User does not yet exist. Create one
+            // User does not exist.
             console.error('user does not exist yet (This should happen at the /nonce endpoint): ' + req.params.address);
             return res.status(401).json({
                 message: 'Login failed.'
