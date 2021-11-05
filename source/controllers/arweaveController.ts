@@ -3,6 +3,8 @@ import { recoverPersonalSignature } from 'eth-sig-util'
 import crypto from 'crypto';
 import Arweave from 'arweave';
 import User from '../models/User';
+import { encodeSession } from '../helpers/jwt';
+import { SESSION_SECRET } from '../utils/secrets';
 
 declare module 'express-session' {
     export interface SessionData {
@@ -43,7 +45,6 @@ const getNonce = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
-    console.log('req.session :>> ', req.session);
     const { address, signature } = req?.body;
     if (!address || !signature || typeof address !== 'string' || typeof signature !== 'string') {
         return res.status(401).json({
@@ -59,21 +60,23 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             });
         } else if (doc) {
             // User exists.
-            console.log('doc :>> ', doc);
-            console.log('doc.nonce :>> ', doc.nonce);
             nonce = doc.nonce;
-            console.log('nonce (it should be assigned) :>> ', nonce);
             const recoveredSignature = recoverPersonalSignature({ data: getSignMessageWithNonce(nonce), sig: req.body.signature }).toLowerCase();
-            console.log('req.body.address :>> ', req.body.address);
-            console.log('signature :>> ', recoveredSignature);
             if (req.body.address.toLowerCase() !== recoveredSignature) {
                 return res.status(401).json({
                     message: 'Login failed.'
                 });
             } else {
-                return res.status(200).json({
-                    message: 'You son of a bitch, you\'re in!'
+                const session = encodeSession(SESSION_SECRET!, {
+                    id: 123,
+                    username: "some user",
+                    dateCreated: Date.now()
                 });
+
+                res.status(201).json(session);
+                // return res.status(200).json({
+                //     message: 'You son of a bitch, you\'re in!'
+                // });
             }
         } else {
             // User does not exist.

@@ -1,11 +1,15 @@
 import express from 'express';
-import passport from 'passport';
 import controller from '../controllers/arweaveController';
+import { requireJwtMiddleware } from '../middleware/jwtMiddleware';
+
 const router = express.Router();
 
 router.get('/nonce/:address', controller.getNonce);
 router.post('/login', controller.login);
-// router.post('/login', passport.authenticate('web3'), controller.login);
+
+// all following routes protected by JWT middleware
+router.use(requireJwtMiddleware)
+
 router.get('/arweave', controller.getArweave);
 router.put('/arweave', controller.putArweave);
 
