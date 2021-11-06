@@ -5,6 +5,9 @@ import Arweave from 'arweave';
 import User from '../models/User';
 import { encodeSession } from '../helpers/jwt';
 import { SESSION_SECRET } from '../utils/secrets';
+import ArLocal from 'arlocal';
+import fs from 'fs';
+import axios from 'axios';
 
 declare module 'express-session' {
     export interface SessionData {
@@ -12,7 +15,22 @@ declare module 'express-session' {
     }
 }
 
-const arweave = Arweave.init({ host: 'arweave.net' })
+// To do:
+// - make local vs mainnet arweave an env variable
+// - move ArLocal to dev dependencies in package.json
+// const arweave = Arweave.init({ host: 'arweave.net' })
+let arweave: Arweave
+const arLocal = new ArLocal();
+(async () => {
+    // Start is a Promise, we need to start it inside an async function.
+    await arLocal.start();
+
+    arweave = Arweave.init({
+        host: 'localhost',
+        port: 1984,
+        protocol: 'http'
+    })
+})();
 
 const getNonce = async (req: Request, res: Response, next: NextFunction) => {
     const nonce = crypto.randomInt(111111, 999999);
@@ -74,9 +92,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
                 });
 
                 res.status(201).json(session);
-                // return res.status(200).json({
-                //     message: 'You son of a bitch, you\'re in!'
-                // });
             }
         } else {
             // User does not exist.
@@ -95,10 +110,56 @@ const getArweave = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
+    let key = await arweave.wallets.generate();
+
+    let data = fs.readFileSync('./source/assets/doge.jpg');
+
+    let transaction = await arweave.createTransaction({ data: data }, key);
+
+    transaction.addTag('Content-Type', 'application/jpg');
+    transaction.addTag('App-Name', 'eth-arweave-basee');
+    transaction.addTag('App-Version', '0.0.1');
+    transaction.addTag('Unix-Time', Date.now().toString());
+
+    await arweave.transactions.sign(transaction, key);
+
+    let uploader = await arweave.transactions.getUploader(transaction);
+
+    while (!uploader.isComplete) {
+        await uploader.uploadChunk();
+        console.log(`${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
+    }
+
+
+    // Decode tags from transactions
+    // await arweave.transactions.get(transaction.id).then(t => {
+    //     t.get('tags').forEach(tag => {
+    //         let key = tag.get('name', { decode: true, string: true });
+    //         let value = tag.get('value', { decode: true, string: true });
+    //         console.log(`${key} : ${value}`);
+    //     });
+    // });
+
     return res.status(200).json({
-        message: 'you said: ' + req.body.data
+        message: 'you said: ' + req.body.data,
+        txnId: transaction.id,
     });
 };
+
+const getImageFromArweaveTxn = async (req: Request, res: Response, next: NextFunction) => {
+    // Mine a block to get that transaction güd
+    // Add if statement for env=dev
+    await axios.get('http://localhost:1984/mine');
+
+    const result = await arweave.transactions.getData(req.params.txnId);
+
+    return res.status(200).json({
+        image: result,
+    });
+
+}
+
+
 
 const getSignMessageWithNonce = (nonce: number | undefined): string => {
     console.log('nonce (getSignMessageWithNonce()) :>> ', nonce);
@@ -107,4 +168,4 @@ const getSignMessageWithNonce = (nonce: number | undefined): string => {
 }
 
 
-export default { getArweave, putArweave, login, getNonce };
+export default { getArweave, putArweave, login, getNonce, getImageFromArweaveTxn };
