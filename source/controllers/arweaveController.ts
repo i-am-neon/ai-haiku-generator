@@ -3,23 +3,27 @@ import Arweave from 'arweave';
 import ArLocal from 'arlocal';
 import fs from 'fs';
 import axios from 'axios';
+import { ARWEAVE_KEY, ENVIRONMENT } from '../utils/secrets';
+import { JWKInterface } from 'arweave/node/lib/wallet';
 
-// To do:
-// - make local vs mainnet arweave an env variable
-// - move ArLocal to dev dependencies in package.json
-// const arweave = Arweave.init({ host: 'arweave.net' })
 let arweave: Arweave
-const arLocal = new ArLocal();
-(async () => {
-    // Start is a Promise, we need to start it inside an async function.
-    await arLocal.start();
 
-    arweave = Arweave.init({
-        host: 'localhost',
-        port: 1984,
-        protocol: 'http'
-    })
-})();
+if (ENVIRONMENT === 'production') {
+    arweave = Arweave.init({ host: 'arweave.net' })
+} else {
+    const arLocal = new ArLocal();
+    (async () => {
+        // Start is a Promise, we need to start it inside an async function.
+        await arLocal.start();
+    
+        arweave = Arweave.init({
+            host: 'localhost',
+            port: 1984,
+            protocol: 'http'
+        })
+    })();
+}
+
 
 const getArweave = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({
@@ -28,7 +32,12 @@ const getArweave = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
-    let key = await arweave.wallets.generate();
+    let key: JWKInterface;
+    if (ENVIRONMENT === 'production') {
+        key = ARWEAVE_KEY;
+    } else {
+        key = await arweave.wallets.generate();
+    }
 
     let data = fs.readFileSync('./source/assets/doge.jpg');
 
@@ -55,9 +64,10 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getImageFromArweaveTxn = async (req: Request, res: Response, next: NextFunction) => {
-    // Mine a block to get that transaction güd
-    // Add if statement for env=dev
-    await axios.get('http://localhost:1984/mine');
+    if (ENVIRONMENT !== 'production') {
+        // Mine a block on ArLocal
+        await axios.get('http://localhost:1984/mine');
+    }
 
     const result = await arweave.transactions.getData(req.params.txnId);
 

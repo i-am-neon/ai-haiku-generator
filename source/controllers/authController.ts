@@ -11,7 +11,6 @@ declare module 'express-session' {
     }
 }
 
-
 const getNonce = async (req: Request, res: Response, next: NextFunction) => {
     const nonce = crypto.randomInt(111111, 999999);
     const address = req.params.address;
