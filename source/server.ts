@@ -2,7 +2,8 @@ import http from 'http';
 import express, { Express } from 'express';
 import morgan from 'morgan';
 import mongoose, { CallbackError } from 'mongoose';
-import routes from './routes/arweaveRoutes';
+import arweaveRoutes from './routes/arweaveRoutes';
+import authRoutes from './routes/authRoutes';
 import { MONGO_CONNECTION_STRING } from './utils/secrets';
 
 /** Connect to MongoDB */
@@ -36,7 +37,8 @@ router.use((req, res, next) => {
 });
 
 /** Routes */
-router.use('/', routes);
+router.use('/', authRoutes);
+router.use('/', arweaveRoutes);
 
 /** Error handling */
 router.use((req, res, next) => {
