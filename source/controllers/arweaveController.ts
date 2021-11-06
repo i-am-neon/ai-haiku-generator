@@ -61,11 +61,11 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     if (ENVIRONMENT !== 'production') {
         // Mine a block on ArLocal
         await axios.get('http://localhost:1984/mine');
-        console.log('result :>> ', result);
     }
 
     const status = await arweave.transactions.getStatus(tx.id);
-    console.log(`Transaction ${tx.id} status code is ${status.status} and is confirmed: ${status.confirmed}`);
+    console.log('status :>> ', status);
+    console.log(`Transaction ${tx.id} status code is ${status.status}`);
 
     const imageURI = ENVIRONMENT === 'production' ? 'https://arweave.net/' + tx.id : 'http://localhost:1984/' + tx.id;
 
@@ -80,18 +80,24 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const getImageFromArweaveTxn = async (req: Request, res: Response, next: NextFunction) => {
+const getStatusForArweaveTxn = async (request: Request, response: Response, next: NextFunction) => {
     if (ENVIRONMENT !== 'production') {
         // Mine a block on ArLocal
         await axios.get('http://localhost:1984/mine');
     }
 
-    const result = await arweave.transactions.getData(req.params.txnId);
+    await arweave.transactions.getStatus(request.params.txnId)
+        .then(result => {
+            return response.status(200).json({
+                status: result,
+            });
+        })
+        .catch(error => {
+            console.error(error);
+            return response.status(500);
+        });
 
-    return res.status(200).json({
-        image: result,
-    });
 
 }
 
-export default { getArweave, putArweave, getImageFromArweaveTxn };
+export default { getArweave, putArweave, getStatusForArweaveTxn };

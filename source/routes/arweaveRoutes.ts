@@ -9,6 +9,6 @@ router.use(requireJwtMiddleware)
 
 router.get('/arweave', controller.getArweave);
 router.put('/arweave', controller.putArweave);
-router.get('/arweaveImage/:txnId', controller.getImageFromArweaveTxn);
+router.get('/arweave/status/:txnId', controller.getStatusForArweaveTxn);
 
 export = router;
