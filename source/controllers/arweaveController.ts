@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import Arweave from 'arweave';
 import ArLocal from 'arlocal';
 import fs from 'fs';
+import fsAsync from 'fs/promises';
+import fileType from 'file-type';
 import axios from 'axios';
 import { ARWEAVE_KEY, ENVIRONMENT } from '../utils/secrets';
 import { JWKInterface } from 'arweave/node/lib/wallet';
@@ -9,13 +11,18 @@ import { JWKInterface } from 'arweave/node/lib/wallet';
 let arweave: Arweave
 
 if (ENVIRONMENT === 'production') {
-    arweave = Arweave.init({ host: 'arweave.net' })
+    arweave = Arweave.init({
+        host: 'arweave.net',
+        protocol: 'https',
+        port: 443,
+    })
+    console.log('connected to Arweave mainnet. Careful, you\'re playing with real money here!');
 } else {
     const arLocal = new ArLocal();
     (async () => {
         // Start is a Promise, we need to start it inside an async function.
         await arLocal.start();
-    
+
         arweave = Arweave.init({
             host: 'localhost',
             port: 1984,
@@ -39,28 +46,38 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
         key = await arweave.wallets.generate();
     }
 
-    let data = fs.readFileSync('./source/assets/doge.jpg');
+    const data = await fsAsync.readFile('./source/assets/doge.jpg');
+    const mediaType = await fileType.fromBuffer(data);
+    const contentType: string = (mediaType && mediaType.mime) ? mediaType.mime : 'image/jpeg';
 
-    let transaction = await arweave.createTransaction({ data: data }, key);
+    const tx = await arweave.createTransaction({ data }, key);
 
-    transaction.addTag('Content-Type', 'application/jpg');
-    transaction.addTag('App-Name', 'eth-arweave-basee');
-    transaction.addTag('App-Version', '0.0.1');
-    transaction.addTag('Unix-Time', Date.now().toString());
+    tx.addTag('Content-Type', contentType);
 
-    await arweave.transactions.sign(transaction, key);
+    await arweave.transactions.sign(tx, key);
 
-    let uploader = await arweave.transactions.getUploader(transaction);
+    const result = await arweave.transactions.post(tx);
 
-    while (!uploader.isComplete) {
-        await uploader.uploadChunk();
-        console.log(`${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
+    if (ENVIRONMENT !== 'production') {
+        // Mine a block on ArLocal
+        await axios.get('http://localhost:1984/mine');
+        console.log('result :>> ', result);
     }
 
-    return res.status(200).json({
-        message: 'you said: ' + req.body.data,
-        txnId: transaction.id,
-    });
+    const status = await arweave.transactions.getStatus(tx.id);
+    console.log(`Transaction ${tx.id} status code is ${status.status} and is confirmed: ${status.confirmed}`);
+
+    const imageURI = ENVIRONMENT === 'production' ? 'https://arweave.net/' + tx.id : 'http://localhost:1984/' + tx.id;
+
+    if (status.status >= 200 && status.status < 300) {
+        return res.status(201).json({
+            message: 'you said: ' + req.body.data,
+            txnId: tx.id,
+            imageURI
+        });
+    } else {
+        return res.status(500);
+    }
 };
 
 const getImageFromArweaveTxn = async (req: Request, res: Response, next: NextFunction) => {
