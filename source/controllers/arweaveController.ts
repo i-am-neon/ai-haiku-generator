@@ -31,13 +31,6 @@ if (ENVIRONMENT === 'production') {
     })();
 }
 
-
-const getArweave = async (req: Request, res: Response, next: NextFunction) => {
-    return res.status(200).json({
-        message: arweave
-    });
-};
-
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     let key: JWKInterface;
     if (ENVIRONMENT === 'production') {
@@ -134,4 +127,4 @@ const getStatusForArweaveTxn = async (request: Request, response: Response, next
 
 }
 
-export default { getArweave, putArweave, getStatusForArweaveTxn };
+export default { putArweave, getStatusForArweaveTxn };

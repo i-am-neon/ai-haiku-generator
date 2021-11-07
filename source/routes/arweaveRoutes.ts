@@ -7,7 +7,6 @@ const router = express.Router();
 // all following routes protected by JWT middleware
 router.use(requireJwtMiddleware)
 
-router.get('/arweave', controller.getArweave);
 router.put('/arweave', controller.putArweave);
 router.get('/arweave/status/:txnId', controller.getStatusForArweaveTxn);
 
