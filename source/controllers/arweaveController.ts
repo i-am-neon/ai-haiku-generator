@@ -96,7 +96,7 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     console.log('metadataStatus :>> ', metadataStatus);
     console.log(`Transaction to upload metadata: ${imageTx.id} status code is ${metadataStatus.status}`);
 
-    const metadataUri = ENVIRONMENT === 'production' ? 'ar://' + metadataTx.id : 'http://localhost:1984/' + metadataTx.id;
+    const metadataUri = ENVIRONMENT === 'production' ? 'https://arweave.net/' + metadataTx.id : 'http://localhost:1984/' + metadataTx.id;
 
 
     if (metadataStatus.status >= 200 && status.status < 300) {
