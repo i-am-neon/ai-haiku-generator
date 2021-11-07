@@ -50,30 +50,64 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     const mediaType = await fileType.fromBuffer(data);
     const contentType: string = (mediaType && mediaType.mime) ? mediaType.mime : 'image/jpeg';
 
-    const tx = await arweave.createTransaction({ data }, key);
+    const imageTx = await arweave.createTransaction({ data }, key);
 
-    tx.addTag('Content-Type', contentType);
+    imageTx.addTag('Content-Type', contentType);
 
-    await arweave.transactions.sign(tx, key);
+    await arweave.transactions.sign(imageTx, key);
 
-    const result = await arweave.transactions.post(tx);
+    await arweave.transactions.post(imageTx);
 
     if (ENVIRONMENT !== 'production') {
         // Mine a block on ArLocal
         await axios.get('http://localhost:1984/mine');
     }
 
-    const status = await arweave.transactions.getStatus(tx.id);
+    const status = await arweave.transactions.getStatus(imageTx.id);
     console.log('status :>> ', status);
-    console.log(`Transaction ${tx.id} status code is ${status.status}`);
+    console.log(`Transaction to upload image: ${imageTx.id} status code is ${status.status}`);
 
-    const imageURI = ENVIRONMENT === 'production' ? 'https://arweave.net/' + tx.id : 'http://localhost:1984/' + tx.id;
+    const imageURI = ENVIRONMENT === 'production' ? 'https://arweave.net/' + imageTx.id : 'http://localhost:1984/' + imageTx.id;
 
-    if (status.status >= 200 && status.status < 300) {
+    if (status.status >= 400) {
+        return res.status(500);
+    }
+
+    const metadata = {
+        "description": "Just your average dog living immutably on the blockchain.",
+        "image": imageURI,
+        "name": "THIS DOGE IS ON FIREEEE 🔥",
+        "attributes": [
+            {
+                "trait_type": "Power Level",
+                "value": "9,001"
+            },
+            {
+                "trait_type": "Message from frontend",
+                "value": req.body.data
+            }
+        ],
+    }
+
+    let metadataTx = await arweave.createTransaction({
+        data: JSON.stringify(metadata)
+    }, key);
+
+    metadataTx.addTag('Content-Type', 'text/json');
+
+    await arweave.transactions.sign(metadataTx, key);
+
+    await arweave.transactions.post(metadataTx);
+
+    const metadataStatus = await arweave.transactions.getStatus(metadataTx.id);
+    console.log('metadataStatus :>> ', metadataStatus);
+    console.log(`Transaction to upload metadata: ${imageTx.id} status code is ${metadataStatus.status}`);
+
+    const metadataUri = 'ar://' + metadataTx.id;
+
+    if (metadataStatus.status >= 200 && status.status < 300) {
         return res.status(201).json({
-            message: 'you said: ' + req.body.data,
-            txnId: tx.id,
-            imageURI
+            metadataUri
         });
     } else {
         return res.status(500);
