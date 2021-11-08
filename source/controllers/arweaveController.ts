@@ -1,16 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import Arweave from 'arweave';
 import ArLocal from 'arlocal';
-import fs from 'fs';
-import fsAsync from 'fs/promises';
-import fileType from 'file-type';
 import axios from 'axios';
 import web3 from 'web3';
-import Eth from 'web3-eth';
-import { ARWEAVE_KEY, ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
-import { JWKInterface } from 'arweave/node/lib/wallet';
+import { ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
+import { getArweaveKey, saveImageToArweave, saveMetadataToArweave, signMessage } from '../helpers/arweave';
 
 let arweave: Arweave
+const web3Instance = new web3();
 
 if (ENVIRONMENT === 'production') {
     arweave = Arweave.init({
@@ -34,87 +31,33 @@ if (ENVIRONMENT === 'production') {
 }
 
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
-    let key: JWKInterface;
-    if (ENVIRONMENT === 'production') {
-        key = ARWEAVE_KEY;
-    } else {
-        key = await arweave.wallets.generate();
-    }
 
-    const data = await fsAsync.readFile('./source/assets/doge.jpg');
-    const mediaType = await fileType.fromBuffer(data);
-    const contentType: string = (mediaType && mediaType.mime) ? mediaType.mime : 'image/jpeg';
+    const key = await getArweaveKey(arweave);
 
-    const imageTx = await arweave.createTransaction({ data }, key);
+    const { imageUri, imageResponseStatus } = await saveImageToArweave(arweave, key);
 
-    imageTx.addTag('Content-Type', contentType);
-
-    await arweave.transactions.sign(imageTx, key);
-
-    await arweave.transactions.post(imageTx);
-
-    if (ENVIRONMENT !== 'production') {
-        // Mine a block on ArLocal
-        await axios.get('http://localhost:1984/mine');
-    }
-
-    const status = await arweave.transactions.getStatus(imageTx.id);
-    console.log('status :>> ', status);
-    console.log(`Transaction to upload image: ${imageTx.id} status code is ${status.status}`);
-
-    const imageURI = ENVIRONMENT === 'production' ? 'https://arweave.net/' + imageTx.id : 'http://localhost:1984/' + imageTx.id;
-
-    if (status.status >= 400) {
+    if (imageResponseStatus >= 400) {
         return res.status(500);
     }
 
-    const metadata = {
-        "description": "Just your average dog living immutably on the blockchain.",
-        "image": imageURI,
-        "name": "THIS DOGE IS ON FIREEEE 🔥",
-        "attributes": [
-            {
-                "trait_type": "Power Level",
-                "value": "9,001"
-            },
-            {
-                "trait_type": "Message from frontend",
-                "value": req.body.data
-            }
-        ],
+    const { metadataUri, metadataTxnId, metadataResponseStatus } = await saveMetadataToArweave(arweave, key, imageUri, req.body.data);
+
+    if (metadataResponseStatus >= 400) {
+        return res.status(500);
     }
 
-    let metadataTx = await arweave.createTransaction({
-        data: JSON.stringify(metadata)
-    }, key);
-
-    metadataTx.addTag('Content-Type', 'text/json');
-
-    await arweave.transactions.sign(metadataTx, key);
-
-    await arweave.transactions.post(metadataTx);
-
-    const metadataStatus = await arweave.transactions.getStatus(metadataTx.id);
-    console.log('metadataStatus :>> ', metadataStatus);
-    console.log(`Transaction to upload metadata: ${imageTx.id} status code is ${metadataStatus.status}`);
-
-    const metadataUri = ENVIRONMENT === 'production' ? 'https://arweave.net/' + metadataTx.id : 'http://localhost:1984/' + metadataTx.id;
-
-    const newWeb3 = new web3();
-
-    const hashedMessage = newWeb3.utils.soliditySha3({type: 'string', value: metadataUri}) ?? '';
-
-    const signedMessage = newWeb3.eth.accounts.sign(hashedMessage, ETH_SIGNER_PRIVATE_KEY!);
-
-    if (metadataStatus.status >= 200 && status.status < 300) {
+    try {
+        const signedMessage = signMessage(web3Instance, metadataUri);
+        
         return res.status(201).json({
-            txnId: metadataTx.id,
+            txnId: metadataTxnId,
             metadataUri,
             signature: signedMessage.signature
         });
-    } else {
+    } catch (error) {
         return res.status(500);
     }
+
 };
 
 const getStatusForArweaveTxn = async (request: Request, response: Response, next: NextFunction) => {
