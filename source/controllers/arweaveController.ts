@@ -5,7 +5,9 @@ import fs from 'fs';
 import fsAsync from 'fs/promises';
 import fileType from 'file-type';
 import axios from 'axios';
-import { ARWEAVE_KEY, ENVIRONMENT } from '../utils/secrets';
+import web3 from 'web3';
+import Eth from 'web3-eth';
+import { ARWEAVE_KEY, ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
 let arweave: Arweave
@@ -98,11 +100,17 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
 
     const metadataUri = ENVIRONMENT === 'production' ? 'https://arweave.net/' + metadataTx.id : 'http://localhost:1984/' + metadataTx.id;
 
+    const newWeb3 = new web3();
+
+    const hashedMessage = newWeb3.utils.soliditySha3({type: 'string', value: metadataUri}) ?? '';
+
+    const signedMessage = newWeb3.eth.accounts.sign(hashedMessage, ETH_SIGNER_PRIVATE_KEY!);
 
     if (metadataStatus.status >= 200 && status.status < 300) {
         return res.status(201).json({
             txnId: metadataTx.id,
-            metadataUri
+            metadataUri,
+            signature: signedMessage.signature
         });
     } else {
         return res.status(500);
@@ -130,3 +138,7 @@ const getStatusForArweaveTxn = async (request: Request, response: Response, next
 }
 
 export default { putArweave, getStatusForArweaveTxn };
+
+function value(type: any, arg1: string, value: any, metadataUri: string) {
+    throw new Error('Function not implemented.');
+}
