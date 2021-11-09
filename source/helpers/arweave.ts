@@ -105,7 +105,7 @@ export const saveMetadataToArweave =
             status = await arweave.transactions.getStatus(metadataTxnId).then(s => s.status);
 
             metadataUri = ENVIRONMENT === 'production'
-                ? 'https://arweave.net/' + metadataTxnId
+                ? 'ar://' + metadataTxnId
                 : 'http://localhost:1984/' + metadataTxnId;
 
         } catch (error) {
