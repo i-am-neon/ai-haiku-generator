@@ -35,7 +35,6 @@ const getNonce = async (req: Request, res: Response, next: NextFunction) => {
         }
     })
 
-    console.log('req.session :>> ', req.session);
     return res.status(200).json({
         message: getSignMessageWithNonce(nonce)
     });
@@ -65,8 +64,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
                 });
             } else {
                 const session = encodeSession(SESSION_SECRET!, {
-                    id: 123,
-                    username: "some user",
+                    id: nonce,
+                    username: address,
                     dateCreated: Date.now()
                 });
 
