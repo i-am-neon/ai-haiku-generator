@@ -27,13 +27,13 @@ export const getArweaveKey = async (arweave: Arweave): Promise<JWKInterface> => 
     return key;
 }
 
-export const saveImageToArweave = async (arweave: Arweave, key: JWKInterface): Promise<saveImageToArweaveResponse> => {
+export const saveImageToArweave = async (arweave: Arweave, key: JWKInterface, pathToLocalImage: string): Promise<saveImageToArweaveResponse> => {
 
     let imageUri: string;
     let status: number;
 
     try {
-        const data = await fsAsync.readFile('./source/assets/doge.jpg');
+        const data = await fsAsync.readFile(pathToLocalImage);
         const mediaType = await fileType.fromBuffer(data);
         const contentType: string = (mediaType && mediaType.mime) ? mediaType.mime : 'image/jpeg';
 

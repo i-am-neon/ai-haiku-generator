@@ -34,7 +34,9 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
 
     const key = await getArweaveKey(arweave);
 
-    const { imageUri, imageResponseStatus } = await saveImageToArweave(arweave, key);
+    const pathToLocalImage = './source/assets/doge.jpg';
+
+    const { imageUri, imageResponseStatus } = await saveImageToArweave(arweave, key, pathToLocalImage);
 
     if (imageResponseStatus >= 400) {
         return res.status(500);
