@@ -48,7 +48,7 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const signedMessage = signMessage(web3Instance, metadataUri);
-        
+
         return res.status(201).json({
             txnId: metadataTxnId,
             metadataUri,
@@ -81,7 +81,3 @@ const getStatusForArweaveTxn = async (request: Request, response: Response, next
 }
 
 export default { putArweave, getStatusForArweaveTxn };
-
-function value(type: any, arg1: string, value: any, metadataUri: string) {
-    throw new Error('Function not implemented.');
-}
