@@ -5,12 +5,17 @@ import mongoose, { CallbackError } from 'mongoose';
 import arweaveRoutes from './routes/arweaveRoutes';
 import authRoutes from './routes/authRoutes';
 import { MONGO_CONNECTION_STRING } from './utils/secrets';
+import { generateHaiku } from './utils/generator';
 
 /** Connect to MongoDB */
 mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
-    if (error) console.error(error);
-    console.log('Connected to MongoDB');
+    if (error) throw new Error(error.message); else console.log('Connected to MongoDB');
 });
+
+generateHaiku(
+    "Hello World",
+    "This is a hello world program.\nPrint the text \"Hello World\"\nEvery line just prints out some text."
+);
 
 const router: Express = express();
 

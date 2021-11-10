@@ -5,12 +5,6 @@ import User from '../models/User';
 import { encodeSession } from '../helpers/jwt';
 import { SESSION_SECRET } from '../utils/secrets';
 
-declare module 'express-session' {
-    export interface SessionData {
-        nonce: number;
-    }
-}
-
 const getNonce = async (req: Request, res: Response, next: NextFunction) => {
     const nonce = crypto.randomInt(111111, 999999);
     const address = req.params.address;
