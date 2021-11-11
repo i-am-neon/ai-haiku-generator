@@ -5,6 +5,7 @@ import axios from 'axios';
 import web3 from 'web3';
 import { ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
 import { getArweaveKey, saveImageToArweave, saveMetadataToArweave, signMessage } from '../helpers/arweave';
+import { generateHaiku } from '../utils/generator';
 
 let arweave: Arweave
 const web3Instance = new web3();
@@ -31,18 +32,35 @@ if (ENVIRONMENT === 'production') {
 }
 
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
+    // const haikuTitle = req.body.haikuTitle;
+    // const haikuContent = req.body.haikuContent;
+
+    // For testing:
+    const haikuTitle = "Zion National Park"
+    const haikuContent = "Shadows of canyons,\nA flat road, a car...\nSunset over Zion";
+
+    const { finalImagePath, paperName } = await generateHaiku(
+        haikuTitle,
+        haikuContent
+    );
+
 
     const key = await getArweaveKey(arweave);
 
-    const pathToLocalImage = './source/assets/test.png';
-
-    const { imageUri, imageResponseStatus } = await saveImageToArweave(arweave, key, pathToLocalImage);
+    const { imageUri, imageResponseStatus } = await saveImageToArweave(arweave, key, finalImagePath);
 
     if (imageResponseStatus >= 400) {
         return res.status(500);
     }
 
-    const { metadataUri, metadataTxnId, metadataResponseStatus } = await saveMetadataToArweave(arweave, key, imageUri, req.body.data);
+    const { metadataUri, metadataTxnId, metadataResponseStatus } = await saveMetadataToArweave(
+        arweave,
+        key,
+        imageUri,
+        haikuTitle,
+        haikuContent,
+        paperName
+    );
 
     if (metadataResponseStatus >= 400) {
         return res.status(500);

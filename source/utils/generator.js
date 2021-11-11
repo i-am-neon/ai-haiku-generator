@@ -81,10 +81,11 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
 
     // Create image file
-    const buffer = canvas.toBuffer('image/png')
-    fs.writeFileSync(`./source/assets/output/test.png`, buffer)
+    const buffer = canvas.toBuffer('image/png');
+    const finalImagePath = `./source/assets/output/test.png`;
+    fs.writeFileSync(finalImagePath, buffer);
 
-    return;
+    return { finalImagePath, paperName: paperChoice.name ?? SHUNSU };
 }
 
 function choosePaper() {

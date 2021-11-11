@@ -12,10 +12,10 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
     if (error) throw new Error(error.message); else console.log('Connected to MongoDB');
 });
 
-generateHaiku(
-    "Zion National Park",
-    "Shadows of canyons,\nA flat road, a car...\nSunset over Zion"
-);
+// generateHaiku(
+//     "Zion National Park",
+//     "Shadows of canyons,\nA flat road, a car...\nSunset over Zion"
+// );
 
 const router: Express = express();
 

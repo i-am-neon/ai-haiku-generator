@@ -65,7 +65,8 @@ export const saveImageToArweave = async (arweave: Arweave, key: JWKInterface, pa
 }
 
 export const saveMetadataToArweave =
-    async (arweave: Arweave, key: JWKInterface, imageUri: string, customText: string): Promise<saveMetadataToArweaveResponse> => {
+    async (arweave: Arweave, key: JWKInterface, imageUri: string, haikuTitle: string, haikuContent: string, paperName: string)
+    : Promise<saveMetadataToArweaveResponse> => {
 
         let metadataUri: string;
         let metadataTxnId: string;
@@ -73,17 +74,13 @@ export const saveMetadataToArweave =
 
         try {
             const metadata = {
-                "description": "Just your average dog living immutably on the blockchain.",
+                "description": haikuContent,
                 "image": imageUri,
-                "name": "THIS DOGE IS ON FIREEEE 🔥",
+                "name": haikuTitle,
                 "attributes": [
                     {
-                        "trait_type": "Power Level",
-                        "value": "9,001"
-                    },
-                    {
-                        "trait_type": "Message from frontend",
-                        "value": customText
+                        "trait_type": "Paper",
+                        "value": paperName
                     }
                 ],
             }
