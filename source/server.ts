@@ -13,7 +13,7 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
 });
 
 generateHaiku(
-    "Hello World",
+    "fjdsakl;f",
     "This is a hello world program.\nPrint the text \"Hello World\"\nEvery line just prints out some text."
 );
 

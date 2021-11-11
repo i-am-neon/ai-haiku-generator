@@ -1,7 +1,12 @@
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import fs from 'fs';
+import { GOLD_AND_SILVER, GOLD_AND_SILVER_PATHS, OGURA, OGURA_PATHS, SHUNSU, SHUNSU_PATHS, UNRYU, UNRYU_PATHS } from './paperConstants';
 import { translateText } from './translator';
 
+// Paper constants
+
+
+// Font constants
 const KAISEI_TOKUMIN = 'Kaisei Tokumin';
 const YUJI_SYUKO = 'Yuji Syuko';
 const ZEN_ANTIQUE_SOFT = 'Zen Antique Soft';
@@ -23,7 +28,7 @@ registerFont('source/assets/fonts/YujiBoku.ttf', { family: YUJI_BOKU });
 
 export const generateHaiku = async (haikuTitle, haikuContent) => {
 
-    const chosenFont = YUJI_SYUKO;
+    const chosenFont = SHIPPORI_MINCHO;
 
     // Haiku papers will be 10.5cm x 14.85cm
     const canvasWidth = 1050
@@ -35,13 +40,13 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     const context = canvas.getContext('2d')
 
     // Add Paper
-    const imageAddress = 'source/assets/papers/ogura/ogura-2.jpeg';
+    const paperChoice = choosePaper();
+    const imageAddress = paperChoice.path;
     const image = await loadImage(imageAddress);
     context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
     // Add title
     const translatedTitle = await translateText(haikuTitle);
-    console.log('translatedTitle :>> ', translatedTitle);
     const titleChars = translatedTitle.split('');
 
     context.font = `70pt "${chosenFont}"`
@@ -98,4 +103,39 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     fs.writeFileSync(`./source/assets/output/test.png`, buffer)
 
     return;
+}
+
+function choosePaper() {
+    const rndInt = randomIntFromInterval(1, 100);
+
+    let name;
+    let path;
+
+    if (rndInt <= 40) {
+        // Shunsu
+        name = SHUNSU;
+        path = getRandomFileFromList(SHUNSU_PATHS);
+    } else if (rndInt <= 70) {
+        // Ogura
+        name = OGURA;
+        path = getRandomFileFromList(OGURA_PATHS);
+    } else if (rndInt <= 90) {
+        // Unryu
+        name = UNRYU;
+        path = getRandomFileFromList(UNRYU_PATHS);
+    } else if (rndInt <= 100) {
+        // Gold and Silver
+        name = GOLD_AND_SILVER;
+        path = getRandomFileFromList(GOLD_AND_SILVER_PATHS);
+    }
+
+    return { name, path };
+}
+
+function randomIntFromInterval(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function getRandomFileFromList(fileList) {
+    return fileList[Math.floor(Math.random() * fileList.length)];
 }
