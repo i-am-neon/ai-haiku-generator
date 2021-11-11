@@ -76,9 +76,9 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     const haikuLines = haikuContent.split('\n');
     const lineHeight = context.measureText(haikuLines[0]).emHeightDescent;
 
-    context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop);
+    context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop);
     context.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight);
-    context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
+    context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
 
     // Create image file
     const buffer = canvas.toBuffer('image/png');
