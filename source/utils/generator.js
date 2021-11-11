@@ -1,48 +1,99 @@
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import fs from 'fs';
 
+const KAISEI_TOKUMIN = 'Kaisei Tokumin';
+const YUJI_SYUKO = 'Yuji Syuko';
+const ZEN_ANTIQUE_SOFT = 'Zen Antique Soft';
+const SHIPPORI_MINCHO = 'Shippori Mincho';
+const NEW_TEGOMIN = 'New Tegomin';
+const KIWI_MARU = 'Kiwi Maru';
+const HINA_MINCHO = 'Hina Mincho';
+const YUJI_BOKU = 'Yuji Boku';
+
+// Registering fonts
+registerFont('source/assets/fonts/KaiseiTokumin.ttf', { family: KAISEI_TOKUMIN });
+registerFont('source/assets/fonts/YujiSyuku.ttf', { family: YUJI_SYUKO });
+registerFont('source/assets/fonts/ZenAntiqueSoft.ttf', { family: ZEN_ANTIQUE_SOFT });
+registerFont('source/assets/fonts/ShipporiMincho.ttf', { family: SHIPPORI_MINCHO });
+registerFont('source/assets/fonts/NewTegomin.ttf', { family: NEW_TEGOMIN });
+registerFont('source/assets/fonts/KiwiMaru.ttf', { family: KIWI_MARU });
+registerFont('source/assets/fonts/HinaMincho.ttf', { family: HINA_MINCHO });
+registerFont('source/assets/fonts/YujiBoku.ttf', { family: YUJI_BOKU });
+
 export const generateHaiku = async (haikuTitle, haikuContent) => {
     console.log('haikuText :>> ', haikuContent);
 
-    // Registering fonts
+    const chosenFont = YUJI_SYUKO;
 
-    // Sans serif
-    registerFont('source/assets/fonts/Comfortaa-VariableFont_wght.ttf', { family: 'Comfortaa' });
-    registerFont('source/assets/fonts/MontserratAlternate.ttf', { family: 'Montserrat Alternate' });
-    
-    // Serif
-    registerFont('source/assets/fonts/YujiSyuku.ttf', { family: 'Yuji Syuko' });
-    registerFont('source/assets/fonts/Cardo-Bold.ttf', { family: 'Cardo Bold' });
-    registerFont('source/assets/fonts/Eczar.ttf', { family: 'Eczar' });
-    
     // Haiku papers will be 10.5cm x 14.85cm
-    const width = 1050
-    const height = 1485
+    const canvasWidth = 1050
+    const canvasHeight = 1485
+    const startHaikuContentHeightFromTop = canvasHeight * .55;
+    console.log('startHaikuContentHeightFromTop :>> ', startHaikuContentHeightFromTop);
 
-    const canvas = createCanvas(width, height)
+    const canvas = createCanvas(canvasWidth, canvasHeight)
     const context = canvas.getContext('2d')
 
-    const imageAddress = 'source/assets/papers/sample-background.png';
+    // Add Paper
+    const imageAddress = 'source/assets/papers/ogura/ogura-2.jpeg';
     const image = await loadImage(imageAddress);
+    context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
-    context.drawImage(image, 0, 0, width, height)
-    context.font = '36pt "Zen Kurenaido"'
+    // Add title
+    const translatedTitle = 'クリプトパンク';
+    const titleChars = translatedTitle.split('');
+
+    context.font = `70pt "${chosenFont}"`
     context.textAlign = 'center'
     context.textBaseline = 'top'
-    context.fillStyle = '#3574d4'
+    context.fillStyle = '#000'
+
+    const characterWidth = context.measureText(titleChars[0]).width;
+    const characterHeight = context.measureText(titleChars[0]).emHeightDescent;
+
+    const charsPerLine = Math.floor(startHaikuContentHeightFromTop / characterHeight) - 1;
+
+    const numberOfTitleLines = Math.ceil(titleChars.length / charsPerLine);
+
+    const titleLines = [];
+    for (let index = 0; index < numberOfTitleLines; index++) {
+        titleLines.push([]);
+    }
+
+    let currentLineIndex = 0
+    titleChars.forEach(char => {
+        if (titleLines[currentLineIndex].length >= charsPerLine) {
+            currentLineIndex ++;
+        }
+        titleLines[currentLineIndex].push(char);
+    });
+
+    for (let currentLineIndex = 0; currentLineIndex < titleLines.length; currentLineIndex++) {
+        for (let currentCharIndex = 0; currentCharIndex < titleLines[currentLineIndex].length; currentCharIndex++) {
+            const currentChar = titleLines[currentLineIndex][currentCharIndex];
+            const widthOffset = canvasWidth -  characterWidth * (numberOfTitleLines - currentLineIndex);
+            const heightOffset = characterWidth * (currentCharIndex);
+            context.fillText(currentChar, widthOffset, heightOffset);
+        }
+        
+    }
+
+
+    // Add haiku
+    context.font = `36pt "${chosenFont}"`
+    context.textAlign = 'center'
+    context.textBaseline = 'top'
+    context.fillStyle = '#000'
 
     const haikuLines = haikuContent.split('\n');
     const lineHeight = context.measureText(haikuLines[0]).emHeightDescent;
-    const startHaikuContentHeightFromTop = height * .55;
 
-    context.fillStyle = '#000'
-
-    context.fillText(haikuLines[0], width / 2, startHaikuContentHeightFromTop)
-    context.fillText(haikuLines[1], width / 2, startHaikuContentHeightFromTop - 2 * lineHeight)
-    context.fillText(haikuLines[2], width / 2, startHaikuContentHeightFromTop - 4 * lineHeight)
+    context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop)
+    context.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight)
+    context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight)
 
     const buffer = canvas.toBuffer('image/png')
-    fs.writeFileSync('./source/assets/output/test.png', buffer)
+    fs.writeFileSync(`./source/assets/output/test.png`, buffer)
 
     return;
 }
