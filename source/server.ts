@@ -13,8 +13,8 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
 });
 
 generateHaiku(
-    "fjdsakl;f",
-    "This is a hello world program.\nPrint the text \"Hello World\"\nEvery line just prints out some text."
+    "Zion National Park",
+    "Shadows of canyons,\nA flat road, a car...\nSunset over Zion"
 );
 
 const router: Express = express();

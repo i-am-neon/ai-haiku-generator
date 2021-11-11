@@ -3,38 +3,22 @@ import fs from 'fs';
 import { GOLD_AND_SILVER, GOLD_AND_SILVER_PATHS, OGURA, OGURA_PATHS, SHUNSU, SHUNSU_PATHS, UNRYU, UNRYU_PATHS } from './paperConstants';
 import { translateText } from './translator';
 
-// Paper constants
-
-
 // Font constants
-const KAISEI_TOKUMIN = 'Kaisei Tokumin';
 const YUJI_SYUKO = 'Yuji Syuko';
-const ZEN_ANTIQUE_SOFT = 'Zen Antique Soft';
 const SHIPPORI_MINCHO = 'Shippori Mincho';
-const NEW_TEGOMIN = 'New Tegomin';
-const KIWI_MARU = 'Kiwi Maru';
-const HINA_MINCHO = 'Hina Mincho';
-const YUJI_BOKU = 'Yuji Boku';
 
 // Registering fonts
-registerFont('source/assets/fonts/KaiseiTokumin.ttf', { family: KAISEI_TOKUMIN });
 registerFont('source/assets/fonts/YujiSyuku.ttf', { family: YUJI_SYUKO });
-registerFont('source/assets/fonts/ZenAntiqueSoft.ttf', { family: ZEN_ANTIQUE_SOFT });
 registerFont('source/assets/fonts/ShipporiMincho.ttf', { family: SHIPPORI_MINCHO });
-registerFont('source/assets/fonts/NewTegomin.ttf', { family: NEW_TEGOMIN });
-registerFont('source/assets/fonts/KiwiMaru.ttf', { family: KIWI_MARU });
-registerFont('source/assets/fonts/HinaMincho.ttf', { family: HINA_MINCHO });
-registerFont('source/assets/fonts/YujiBoku.ttf', { family: YUJI_BOKU });
 
 export const generateHaiku = async (haikuTitle, haikuContent) => {
-
-    const chosenFont = SHIPPORI_MINCHO;
+    haikuTitle = removePunctuation(haikuTitle);
+    haikuContent = removePunctuation(haikuContent);
 
     // Haiku papers will be 10.5cm x 14.85cm
     const canvasWidth = 1050
     const canvasHeight = 1485
     const startHaikuContentHeightFromTop = canvasHeight * .55;
-    console.log('startHaikuContentHeightFromTop :>> ', startHaikuContentHeightFromTop);
 
     const canvas = createCanvas(canvasWidth, canvasHeight)
     const context = canvas.getContext('2d')
@@ -49,7 +33,7 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     const translatedTitle = await translateText(haikuTitle);
     const titleChars = translatedTitle.split('');
 
-    context.font = `70pt "${chosenFont}"`
+    context.font = `70pt "${YUJI_SYUKO}"`
     context.textAlign = 'center'
     context.textBaseline = 'top'
     context.fillStyle = '#000'
@@ -81,12 +65,10 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
             const heightOffset = characterWidth * (currentCharIndex);
             context.fillText(currentChar, widthOffset, heightOffset);
         }
-
     }
 
-
     // Add haiku
-    context.font = `36pt "${chosenFont}"`
+    context.font = `36pt "${SHIPPORI_MINCHO}"`
     context.textAlign = 'center'
     context.textBaseline = 'top'
     context.fillStyle = '#000'
@@ -138,4 +120,8 @@ function randomIntFromInterval(min, max) { // min and max included
 
 function getRandomFileFromList(fileList) {
     return fileList[Math.floor(Math.random() * fileList.length)];
+}
+
+function removePunctuation(s) {
+    return s.replace(/[\/#!?$%\^&\*;:{}=\-_`~()|<>@"]/g, "").replace(/\s{2,}/g, ' ');
 }

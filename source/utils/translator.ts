@@ -15,7 +15,7 @@ export async function translateText(text: string): Promise<string> {
 
   // Set title to 'untitled' in Japanese if the translation doesn't go through
   const detectedLanguage = await translate.detect(translation).then((res: { language: any; }[]) => res[0].language);
-  if (detectedLanguage !== 'en') {
+  if (detectedLanguage !== 'ja') {
     translation = '無題';
   }
 
