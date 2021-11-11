@@ -1,5 +1,6 @@
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import fs from 'fs';
+import { translateText } from './translator';
 
 const KAISEI_TOKUMIN = 'Kaisei Tokumin';
 const YUJI_SYUKO = 'Yuji Syuko';
@@ -21,7 +22,6 @@ registerFont('source/assets/fonts/HinaMincho.ttf', { family: HINA_MINCHO });
 registerFont('source/assets/fonts/YujiBoku.ttf', { family: YUJI_BOKU });
 
 export const generateHaiku = async (haikuTitle, haikuContent) => {
-    console.log('haikuText :>> ', haikuContent);
 
     const chosenFont = YUJI_SYUKO;
 
@@ -40,7 +40,8 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
 
     // Add title
-    const translatedTitle = 'クリプトパンク';
+    const translatedTitle = await translateText(haikuTitle);
+    console.log('translatedTitle :>> ', translatedTitle);
     const titleChars = translatedTitle.split('');
 
     context.font = `70pt "${chosenFont}"`
@@ -63,7 +64,7 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     let currentLineIndex = 0
     titleChars.forEach(char => {
         if (titleLines[currentLineIndex].length >= charsPerLine) {
-            currentLineIndex ++;
+            currentLineIndex++;
         }
         titleLines[currentLineIndex].push(char);
     });
@@ -71,11 +72,11 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     for (let currentLineIndex = 0; currentLineIndex < titleLines.length; currentLineIndex++) {
         for (let currentCharIndex = 0; currentCharIndex < titleLines[currentLineIndex].length; currentCharIndex++) {
             const currentChar = titleLines[currentLineIndex][currentCharIndex];
-            const widthOffset = canvasWidth -  characterWidth * (numberOfTitleLines - currentLineIndex);
+            const widthOffset = canvasWidth - characterWidth * (numberOfTitleLines - currentLineIndex);
             const heightOffset = characterWidth * (currentCharIndex);
             context.fillText(currentChar, widthOffset, heightOffset);
         }
-        
+
     }
 
 
@@ -88,10 +89,11 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     const haikuLines = haikuContent.split('\n');
     const lineHeight = context.measureText(haikuLines[0]).emHeightDescent;
 
-    context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop)
-    context.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight)
-    context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight)
+    context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop);
+    context.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight);
+    context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
 
+    // Create image file
     const buffer = canvas.toBuffer('image/png')
     fs.writeFileSync(`./source/assets/output/test.png`, buffer)
 
