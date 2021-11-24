@@ -13,7 +13,7 @@ registerFont('source/assets/fonts/ShipporiMincho.ttf', { family: SHIPPORI_MINCHO
 
 export const generateHaiku = async (haikuTitle, haikuContent) => {
     haikuTitle = removePunctuation(haikuTitle);
-    haikuContent = removePunctuation(haikuContent);
+    // haikuContent = removePunctuation(haikuContent);
 
     // Haiku papers will be 10.5cm x 14.85cm
     const canvasWidth = 1050

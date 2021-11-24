@@ -32,12 +32,12 @@ if (ENVIRONMENT === 'production') {
 }
 
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
-    // const haikuTitle = req.body.haikuTitle;
-    // const haikuContent = req.body.haikuContent;
+    const haikuTitle = req.body.haikuTitle;
+    const haikuContent = req.body.haikuContent;
 
     // For testing:
-    const haikuTitle = "Zion National Park"
-    const haikuContent = "Shadows of canyons,\nA flat road, a car...\nSunset over Zion";
+    // const haikuTitle = "Zion National Park"
+    // const haikuContent = "Shadows of canyons,\nA flat road, a car...\nSunset over Zion";
 
     const { finalImagePath, paperName } = await generateHaiku(
         haikuTitle,

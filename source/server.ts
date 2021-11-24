@@ -6,6 +6,7 @@ import arweaveRoutes from './routes/arweaveRoutes';
 import authRoutes from './routes/authRoutes';
 import { MONGO_CONNECTION_STRING } from './utils/secrets';
 import { generateHaiku } from './utils/generator';
+import openAiRoutes from './routes/openAiRoutes';
 
 /** Connect to MongoDB */
 mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
@@ -13,8 +14,8 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
 });
 
 // generateHaiku(
-//     "Zion National Park",
-//     "Shadows of canyons,\nA flat road, a car...\nSunset over Zion"
+//     "Developer Froggies",
+//     "They sit in the dew,\nEating their own spawn,\n~Oops!~"
 // );
 
 const router: Express = express();
@@ -43,6 +44,7 @@ router.use((req, res, next) => {
 
 /** Routes */
 router.use('/', authRoutes);
+router.use('/', openAiRoutes);
 router.use('/', arweaveRoutes);
 
 /** Error handling */
