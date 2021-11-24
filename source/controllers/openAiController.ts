@@ -1,20 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
+import { getHaikuOptionsForTitle } from '../helpers/openAi';
 
 const putHaikusFromTitle = async (request: Request, response: Response, next: NextFunction) => {
 
     try {
 
-        const haiku1 = `They’re born in pixel caves,\n\ndemon networks weave but can be undone.\n\nCryptocurrency hackers do the math`
-
-        const haiku2 = `The soft wind blows\nthrough the blossoms of cherry trees.\nSigma sharks, attack!`
-
-        const haiku3 = `A cloudless night\nThe Milky Way showers me\nWith its starry dew.`
+        const haikuOptions = await getHaikuOptionsForTitle(request.body.haikuTitle);
 
         return response.status(201).json({
             haikus: [
-                haiku1,
-                haiku2,
-                haiku3
+                haikuOptions[0],
+                haikuOptions[1],
+                haikuOptions[2]
             ]
         });
     } catch (error) {

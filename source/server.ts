@@ -13,10 +13,10 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
     if (error) throw new Error(error.message); else console.log('Connected to MongoDB');
 });
 
-// generateHaiku(
-//     "Developer Froggies",
-//     "They sit in the dew,\nEating their own spawn,\n~Oops!~"
-// );
+generateHaiku(
+    "Hello, World!",
+    "Hello, world!\nServer not found\nOnly server who accepts me now is -error_backend+ "
+);
 
 const router: Express = express();
 
@@ -31,7 +31,6 @@ router.use(express.json());
 router.use((req, res, next) => {
     // set the CORS policy
     res.header('Access-Control-Allow-Origin', '*');
-    // res.header('Access-Control-Allow-Origin', process.env.ALLOW_ORIGIN);
     // set the CORS headers
     res.header('Access-Control-Allow-Headers', 'origin, X-Requested-With,Content-Type,Accept, X-JWT-Token');
     // set the CORS method headers
