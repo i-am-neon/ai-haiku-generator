@@ -13,10 +13,10 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
     if (error) throw new Error(error.message); else console.log('Connected to MongoDB');
 });
 
-generateHaiku(
-    "Flower Petals",
-    "Lone flower petal\nFloats through open window\nInto another room "
-);
+// generateHaiku(
+//     "Flower Petals",
+//     "Lone flower petal\nFloats through open window\nInto another room "
+// );
 
 const router: Express = express();
 

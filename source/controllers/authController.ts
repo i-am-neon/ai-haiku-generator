@@ -77,7 +77,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
 const getSignMessageWithNonce = (nonce: number | undefined): string => {
     console.log('nonce (getSignMessageWithNonce()) :>> ', nonce);
-    return `Sign this message to prove you have access to this wallet. This is to protect our site against bad actors and does not cost you anything.
+    return `Sign this message to prove you have access to this wallet.
     \n\nSecurity code (you can ignore this): ${nonce}`
 }
 
