@@ -23,12 +23,14 @@ Just a few words,
 And the world is different.
 gm crypto twitter. """
 Title for a haiku: "${haikuTitle}"
-Haiku:`;
+Haiku:
+`;
     const haikuOptions = [];
     for (let index = 0; index < 3; index++) {
         const haiku = await getHaikuFromGPT3(haikuPrompt);
         haikuOptions.push(haiku);
     }
+    console.log(`haikuOptions`, haikuOptions)
     return haikuOptions;
 }
 

@@ -14,8 +14,8 @@ mongoose.connect(MONGO_CONNECTION_STRING!, (error: CallbackError) => {
 });
 
 generateHaiku(
-    "Hello, World!",
-    "Hello, world!\nServer not found\nOnly server who accepts me now is -error_backend+ "
+    "Flower Petals",
+    "Lone flower petal\nFloats through open window\nInto another room "
 );
 
 const router: Express = express();

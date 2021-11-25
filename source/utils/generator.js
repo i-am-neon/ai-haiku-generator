@@ -1,6 +1,6 @@
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import fs from 'fs';
-import { GOLD_AND_SILVER, GOLD_AND_SILVER_PATHS, OGURA, OGURA_PATHS, SHUNSU, SHUNSU_PATHS, UNRYU, UNRYU_PATHS } from './paperConstants';
+import { GOLD_AND_SILVER, GOLD_AND_SILVER_PATHS, OGURA, OGURA_PATHS, SHUNSU, SHUNSU_PATHS, BRUSH_STROKE_PATHS, UNRYU, UNRYU_PATHS } from './assetPaths';
 import { translateText } from './translator';
 
 // Font constants
@@ -80,12 +80,36 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     context.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight);
     context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
 
+    // Add brush stroke
+    const brushStrokeAddress = chooseBrushStroke();
+    const brushStrokeImage = await loadImage(brushStrokeAddress);
+
+    // Make the whole canvas just be the bottom left area
+    context.transform(.2, 0, 0, .2, canvasWidth * .05, canvasHeight * .82);
+
+    // Move the canvas [0,0] origin to the shape's center point
+    context.translate( canvasWidth * .5, canvasWidth * .5 );
+
+    // Rotate the image
+    context.rotate(Math.PI * Math.random() * 2) // 2 pi radians in a full circle
+
+    // Move canvas back to top left corner
+    context.translate( canvasWidth * -.5, canvasWidth * -.5 );
+    
+    context.drawImage(brushStrokeImage, 0, 0, canvasWidth, canvasWidth);
+
+
     // Create image file
     const buffer = canvas.toBuffer('image/png');
     const finalImagePath = `./source/assets/output/test.png`;
     fs.writeFileSync(finalImagePath, buffer);
 
     return { finalImagePath, paperName: paperChoice.name ?? SHUNSU };
+}
+
+function chooseBrushStroke() {
+    const path = getRandomFileFromList(BRUSH_STROKE_PATHS);
+    return path;
 }
 
 function choosePaper() {

@@ -44,3 +44,27 @@ export const GOLD_AND_SILVER_PATHS = [
     'source/assets/papers/3_gold-and-silver/gold-and-silver-6.jpeg',
     'source/assets/papers/3_gold-and-silver/gold-and-silver-7.jpeg',
 ]
+
+export const BRUSH_STROKE_PATHS = [
+    'source/assets/brushStrokes/square/0.png',
+    'source/assets/brushStrokes/square/1.png',
+    'source/assets/brushStrokes/square/2.png',
+    'source/assets/brushStrokes/square/3.png',
+    'source/assets/brushStrokes/square/4.png',
+    'source/assets/brushStrokes/square/5.png',
+    'source/assets/brushStrokes/square/6.png',
+    'source/assets/brushStrokes/square/7.png',
+    'source/assets/brushStrokes/square/8.png',
+    'source/assets/brushStrokes/square/9.png',
+    'source/assets/brushStrokes/square/10.png',
+    'source/assets/brushStrokes/square/11.png',
+    'source/assets/brushStrokes/long/0.png',
+    // 'source/assets/brushStrokes/long/1.png',
+    'source/assets/brushStrokes/long/2.png',
+    'source/assets/brushStrokes/long/3.png',
+    // 'source/assets/brushStrokes/long/4.png',
+    'source/assets/brushStrokes/long/5.png',
+    'source/assets/brushStrokes/long/6.png',
+    'source/assets/brushStrokes/long/7.png',
+    'source/assets/brushStrokes/long/8.png',
+]
