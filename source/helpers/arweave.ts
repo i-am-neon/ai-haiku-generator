@@ -66,7 +66,7 @@ export const saveImageToArweave = async (arweave: Arweave, key: JWKInterface, pa
 
 export const saveMetadataToArweave =
     async (arweave: Arweave, key: JWKInterface, imageUri: string, haikuTitle: string, haikuContent: string, paperName: string)
-    : Promise<saveMetadataToArweaveResponse> => {
+        : Promise<saveMetadataToArweaveResponse> => {
 
         let metadataUri: string;
         let metadataTxnId: string;
@@ -89,12 +89,12 @@ export const saveMetadataToArweave =
                 data: JSON.stringify(metadata)
             }, key);
 
-            
-            
+
+
             metadataTx.addTag('Content-Type', 'text/json');
-            
+
             await arweave.transactions.sign(metadataTx, key);
-            
+
             metadataTxnId = metadataTx.id;
 
             await arweave.transactions.post(metadataTx);
@@ -111,7 +111,11 @@ export const saveMetadataToArweave =
             status = 500;
         }
 
-        return { metadataUri, metadataTxnId, metadataResponseStatus: status };
+        return {
+            metadataUri,
+            metadataTxnId,
+            metadataResponseStatus: status
+        };
 
     }
 

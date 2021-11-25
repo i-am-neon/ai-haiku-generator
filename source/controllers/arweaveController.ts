@@ -49,7 +49,11 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
         return res.status(500);
     }
 
-    const { metadataUri, metadataTxnId, metadataResponseStatus } = await saveMetadataToArweave(
+    const {
+        metadataUri,
+        metadataTxnId,
+        metadataResponseStatus,
+    } = await saveMetadataToArweave(
         arweave,
         key,
         imageUri,
@@ -68,6 +72,8 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
         return res.status(201).json({
             txnId: metadataTxnId,
             metadataUri,
+            imageUri,
+            paperName,
             signature: signedMessage.signature
         });
     } catch (error) {
