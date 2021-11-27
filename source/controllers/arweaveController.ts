@@ -6,6 +6,7 @@ import web3 from 'web3';
 import { ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
 import { getArweaveKey, saveImageToArweave, saveMetadataToArweave, signMessage } from '../helpers/arweave';
 import { generateHaiku } from '../utils/generator';
+import { whitelistedAddresses } from '../utils/whitelist';
 
 let arweave: Arweave
 const web3Instance = new web3();
@@ -34,6 +35,14 @@ if (ENVIRONMENT === 'production') {
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     const haikuTitle = req.body.haikuTitle;
     const haikuContent = req.body.haikuContent;
+    // If address is sent, that means user is whitelisted
+    const address = req.body.address;
+
+    if (!whitelistedAddresses.includes(address)) {
+        return res.status(403).json({
+            message: 'Address not whitelisted.'
+        });
+    }
 
     const { finalImagePath, paperName } = await generateHaiku(
         haikuTitle,
@@ -67,8 +76,13 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     try {
-        const signedMessage = signMessage(web3Instance, metadataUri);
-
+        let signedMessage;
+        if (address) {
+            signedMessage = signMessage(web3Instance, 'Whitelisted:' + metadataUri);
+        } else {
+            signedMessage = signMessage(web3Instance, metadataUri);
+        }
+        console.log(`signedMessage`, signedMessage);
         return res.status(201).json({
             txnId: metadataTxnId,
             metadataUri,
@@ -76,6 +90,7 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
             paperName,
             signature: signedMessage.signature
         });
+
     } catch (error) {
         return res.status(500);
     }
