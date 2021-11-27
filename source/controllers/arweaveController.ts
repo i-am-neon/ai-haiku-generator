@@ -6,7 +6,7 @@ import web3 from 'web3';
 import { ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
 import { getArweaveKey, saveImageToArweave, saveMetadataToArweave, signMessage } from '../helpers/arweave';
 import { generateHaiku } from '../utils/generator';
-import { whitelistedAddresses } from '../utils/whitelist';
+import { PUBLIC_MINT_TIMESTAMP_MS, whitelistedAddresses, WHITELIST_MINT_TIMESTAMP_MS } from '../utils/whitelist';
 
 let arweave: Arweave
 const web3Instance = new web3();
@@ -44,6 +44,12 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
         });
     }
 
+    if (Date.now() < WHITELIST_MINT_TIMESTAMP_MS) {
+        return res.status(400).json({
+            message: 'The time has not come to mint.'
+        });
+    }
+
     const { finalImagePath, paperName } = await generateHaiku(
         haikuTitle,
         haikuContent
@@ -76,8 +82,9 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     try {
+        const useWhitelist = address && Date.now() < PUBLIC_MINT_TIMESTAMP_MS;
         let signedMessage;
-        if (address) {
+        if (useWhitelist) {
             signedMessage = signMessage(web3Instance, 'Whitelisted:' + metadataUri);
         } else {
             signedMessage = signMessage(web3Instance, metadataUri);
@@ -88,7 +95,8 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
             metadataUri,
             imageUri,
             paperName,
-            signature: signedMessage.signature
+            signature: signedMessage.signature,
+            useWhitelist
         });
 
     } catch (error) {
