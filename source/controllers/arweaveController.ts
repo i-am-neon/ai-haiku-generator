@@ -38,7 +38,7 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     // If address is sent, that means user is whitelisted
     const address = req.body.address;
 
-    if (!whitelistedAddresses.includes(address)) {
+    if ( address && !whitelistedAddresses.includes(address)) {
         return res.status(403).json({
             message: 'Address not whitelisted.'
         });
