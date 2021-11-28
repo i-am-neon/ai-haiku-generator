@@ -2,6 +2,8 @@ import { createCanvas, loadImage, registerFont } from 'canvas';
 import fs from 'fs';
 import { GOLD_AND_SILVER, GOLD_AND_SILVER_PATHS, OGURA, OGURA_PATHS, SHUNSU, SHUNSU_PATHS, BRUSH_STROKE_PATHS, UNRYU, UNRYU_PATHS } from './assetPaths';
 import { translateText } from './translator';
+import { v4 as uuidv4 } from 'uuid';
+import { saveImageToMongo } from './imageStorage';
 
 // Font constants
 const YUJI_SYUKO = 'Yuji Syuko';
@@ -11,7 +13,7 @@ const SHIPPORI_MINCHO = 'Shippori Mincho';
 registerFont('source/assets/fonts/YujiSyuku.ttf', { family: YUJI_SYUKO });
 registerFont('source/assets/fonts/ShipporiMincho.ttf', { family: SHIPPORI_MINCHO });
 
-export const generateHaiku = async (haikuTitle, haikuContent) => {
+export const generateHaiku = async (haikuTitle, haikuContent, address) => {
     haikuTitle = removePunctuation(haikuTitle);
     // haikuContent = removePunctuation(haikuContent);
 
@@ -21,7 +23,9 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     const startHaikuContentHeightFromTop = canvasHeight * .55;
 
     const canvas = createCanvas(canvasWidth, canvasHeight)
-    const context = canvas.getContext('2d')
+    const context = canvas.getContext('2d');
+    const canvasPaperless = createCanvas(canvasWidth, canvasHeight)
+    const contextPaperless = canvasPaperless.getContext('2d');
 
     // Add Paper
     const paperChoice = choosePaper();
@@ -37,6 +41,11 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     context.textAlign = 'center'
     context.textBaseline = 'top'
     context.fillStyle = '#000'
+
+    contextPaperless.font = `70pt "${YUJI_SYUKO}"`
+    contextPaperless.textAlign = 'center'
+    contextPaperless.textBaseline = 'top'
+    contextPaperless.fillStyle = '#000'
 
     const characterWidth = context.measureText(titleChars[0]).width;
     const characterHeight = context.measureText(titleChars[0]).emHeightDescent;
@@ -64,13 +73,17 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
             const widthOffset = canvasWidth - characterWidth * (numberOfTitleLines - currentLineIndex);
             const heightOffset = characterWidth * (currentCharIndex);
             context.fillText(currentChar, widthOffset, heightOffset);
+            contextPaperless.fillText(currentChar, widthOffset, heightOffset);
         }
     }
 
     // Add haiku
     context.font = `36pt "${SHIPPORI_MINCHO}"`
+    contextPaperless.font = `36pt "${SHIPPORI_MINCHO}"`
     context.textAlign = 'center'
+    contextPaperless.textAlign = 'center'
     context.textBaseline = 'top'
+    contextPaperless.textBaseline = 'top'
     context.fillStyle = '#000'
 
     const haikuLines = haikuContent.split('\n');
@@ -79,6 +92,9 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
     context.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop);
     context.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight);
     context.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
+    contextPaperless.fillText(haikuLines[2], canvasWidth / 2, startHaikuContentHeightFromTop);
+    contextPaperless.fillText(haikuLines[1], canvasWidth / 2, startHaikuContentHeightFromTop - 2 * lineHeight);
+    contextPaperless.fillText(haikuLines[0], canvasWidth / 2, startHaikuContentHeightFromTop - 4 * lineHeight);
 
     // Add brush stroke
     const brushStrokeAddress = chooseBrushStroke();
@@ -86,25 +102,38 @@ export const generateHaiku = async (haikuTitle, haikuContent) => {
 
     // Make the whole canvas just be the bottom left area
     context.transform(.2, 0, 0, .2, canvasWidth * .05, canvasHeight * .82);
+    contextPaperless.transform(.2, 0, 0, .2, canvasWidth * .05, canvasHeight * .82);
 
     // Move the canvas [0,0] origin to the shape's center point
     context.translate( canvasWidth * .5, canvasWidth * .5 );
+    contextPaperless.translate( canvasWidth * .5, canvasWidth * .5 );
 
+    const rotation = Math.PI * Math.random() * 2;
     // Rotate the image
-    context.rotate(Math.PI * Math.random() * 2) // 2 pi radians in a full circle
+    context.rotate(rotation) // 2 pi radians in a full circle
+    contextPaperless.rotate(rotation) // 2 pi radians in a full circle
 
     // Move canvas back to top left corner
     context.translate( canvasWidth * -.5, canvasWidth * -.5 );
+    contextPaperless.translate( canvasWidth * -.5, canvasWidth * -.5 );
     
     context.drawImage(brushStrokeImage, 0, 0, canvasWidth, canvasWidth);
+    contextPaperless.drawImage(brushStrokeImage, 0, 0, canvasWidth, canvasWidth);
 
-
+    const imageUuid = uuidv4();
+    
+    // Create and save paperless image file
+    const paperlessBuffer = canvasPaperless.toBuffer('image/png');
+    const paperlessImagePath = `./source/assets/output/paperless/${imageUuid}.png`; 
+    fs.writeFileSync(paperlessImagePath, paperlessBuffer);
+    saveImageToMongo(address, paperlessImagePath, paperChoice.name);
+    
     // Create image file
     const buffer = canvas.toBuffer('image/png');
-    const finalImagePath = `./source/assets/output/test.png`;
+    const finalImagePath = `./source/assets/output/paper/${imageUuid}.png`;
     fs.writeFileSync(finalImagePath, buffer);
 
-    return { finalImagePath, paperName: paperChoice.name ?? SHUNSU };
+    return { finalImagePath, paperlessImagePath, paperName: paperChoice.name ?? SHUNSU };
 }
 
 function chooseBrushStroke() {

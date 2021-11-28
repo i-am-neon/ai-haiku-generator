@@ -6,8 +6,8 @@ export const PUBLIC_MINT_TIMESTAMP_MS = 1638151200000;
 export const whitelistedAddresses = [
     // NEON:
     '0x915D8f12f523273c814D51e29962fdcb49ad36d5',
-    // NEON account 2:
-    '0x4C164132501908f5351970214A2A6E755A949A53',
+    // NEON account 3:
+    '0x9f7B6411607304cf2f1Ed58Ca82f96490D30dd84',
     // Nadia:
     '0x263Ea7Aeb309B7DA0eE2679B5b8DD76D56AB455e',
     // ImTheCook:

@@ -7,6 +7,7 @@ import { ENVIRONMENT, ETH_SIGNER_PRIVATE_KEY } from '../utils/secrets';
 import { getArweaveKey, saveImageToArweave, saveMetadataToArweave, signMessage } from '../helpers/arweave';
 import { generateHaiku } from '../utils/generator';
 import { PUBLIC_MINT_TIMESTAMP_MS, whitelistedAddresses, WHITELIST_MINT_TIMESTAMP_MS } from '../utils/whitelist';
+import { unlink } from 'fs/promises';
 
 let arweave: Arweave
 const web3Instance = new web3();
@@ -51,9 +52,10 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
         });
     }
 
-    const { finalImagePath, paperName } = await generateHaiku(
+    const { finalImagePath, paperlessImagePath, paperName } = await generateHaiku(
         haikuTitle,
-        haikuContent
+        haikuContent,
+        address
     );
 
 
@@ -81,6 +83,10 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     if (metadataResponseStatus >= 400) {
         return res.status(500);
     }
+
+    // Delete images from memory. They are now stored on Mongo and Arweave
+    unlink(finalImagePath);
+    unlink(paperlessImagePath);
 
     try {
         const useWhitelist = checkWhitelist && Date.now() < PUBLIC_MINT_TIMESTAMP_MS;
