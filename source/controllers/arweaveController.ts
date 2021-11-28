@@ -44,7 +44,8 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
         });
     }
 
-    if (Date.now() < WHITELIST_MINT_TIMESTAMP_MS) {
+    // NEON is super user
+    if (Date.now() < WHITELIST_MINT_TIMESTAMP_MS && address !== '0x915D8f12f523273c814D51e29962fdcb49ad36d5') {
         return res.status(400).json({
             message: 'The time has not come to mint.'
         });
