@@ -35,10 +35,10 @@ if (ENVIRONMENT === 'production') {
 const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     const haikuTitle = req.body.haikuTitle;
     const haikuContent = req.body.haikuContent;
-    // If address is sent, that means user is whitelisted
     const address = req.body.address;
+    const checkWhitelist = req.body.checkWhitelist;
 
-    if ( address && !whitelistedAddresses.includes(address)) {
+    if ( checkWhitelist && !whitelistedAddresses.includes(address)) {
         return res.status(403).json({
             message: 'Address not whitelisted.'
         });
@@ -83,7 +83,7 @@ const putArweave = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     try {
-        const useWhitelist = address && Date.now() < PUBLIC_MINT_TIMESTAMP_MS;
+        const useWhitelist = checkWhitelist && Date.now() < PUBLIC_MINT_TIMESTAMP_MS;
         let signedMessage;
         if (useWhitelist) {
             signedMessage = signMessage(web3Instance, 'Whitelisted:' + metadataUri);

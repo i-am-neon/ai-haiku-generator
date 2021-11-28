@@ -1,12 +1,13 @@
 import OpenAI from 'openai-api';
+import { RESTRICTED_PHRASES } from '../utils/restrictedPhrases';
 import { OPENAI_API_KEY } from '../utils/secrets'
 
 const openai = new OpenAI(OPENAI_API_KEY);
 
 
-export async function getHaikuOptionsForTitle(haikuTitle) {
+export async function getHaikuOptionsForTitle(haikuTitle, walletAddress) {
     const haikuPrompt =
-`Title: Dreams of Dead Poets
+        `Title: Dreams of Dead Poets
 Haiku:
 A soliloquy of stars
 Through the clear, cold night
@@ -36,7 +37,7 @@ Haiku:
 `;
     const haikuOptions = [];
     for (let index = 0; index < 3; index++) {
-        const haiku = await getHaikuFromGPT3(haikuPrompt);
+        const haiku = await getHaikuFromGPT3(haikuPrompt, walletAddress);
         haiku = transformHaiku(haiku);
         if (haikuPassesScreening(haiku)) {
             haikuOptions.push(haiku);
@@ -48,7 +49,7 @@ Haiku:
     return haikuOptions;
 }
 
-async function getHaikuFromGPT3(prompt) {
+async function getHaikuFromGPT3(prompt, walletAddress) {
     const gptResponse = await openai.complete({
         engine: 'davinci',
         prompt: prompt,
@@ -60,10 +61,43 @@ async function getHaikuFromGPT3(prompt) {
         bestOf: 1,
         n: 1,
         stream: false,
-        stop: ['Title:']
+        stop: ['Title:'],
+        user: walletAddress
     });
 
-    return gptResponse.data.choices[0].text;
+    const completion = gptResponse.data.choices[0].text;
+
+    // await contentFilterGPT3(completion, walletAddress);
+    return completion;
+}
+
+function isNSFW(completion) {
+    let containsRestrictedPhrase = false;
+    for (let i = 0; i < RESTRICTED_PHRASES.length; i++) {
+        if (new RegExp("\\b" + RESTRICTED_PHRASES[i].toLowerCase() + "\\b").test(completion.toLowerCase())) {
+            // console.log(`RESTRICTED_PHRASES[i]`, RESTRICTED_PHRASES[i]);
+            containsRestrictedPhrase = true;
+        }
+    }
+
+    return containsRestrictedPhrase;
+}
+
+async function contentFilterGPT3(completion, walletAddress) {
+    console.log('content filetering...');
+    const contentFilterResponse = await openai.complete({
+        engine: 'content-filter-alpha',
+        prompt = "<|endoftext|>" + completion + "\n--\nLabel:",
+        temperature=0,
+        max_tokens=1,
+        top_p=0,
+        logprobs=10,
+        user: walletAddress
+    });
+
+    const result = contentFilterResponse["choices"][0]["text"];
+    console.log(`CONTENT FILTER result`, result)
+    return;
 }
 
 function transformHaiku(haiku) {
@@ -89,7 +123,11 @@ function haikuPassesScreening(haiku) {
     if (haiku.split('\n').length < 3) {
         // Haiku not long enough
         console.log(`haiku not long enough:`, haiku);
-        result = false
+        result = false;
+    }
+    if (isNSFW(haiku)) {
+        console.log(`haiku does not pass content filter:`, haiku);
+        result = false;
     }
 
     return result;
