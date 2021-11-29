@@ -28,8 +28,8 @@ export const whitelistedAddresses = [
     '0x94531582b09aF4C04C159df566c2d1d39EC53815',
     // Gus:
     '0x293478d314bc925fc80d5af847fE15A14E5b380B',
-    // :
-    '',
+    // shane:
+    '0x5B4Df1AA89d8683f56667bFa59150b80e6923740',
     // :
     '',
     // :
