@@ -26,8 +26,8 @@ export const whitelistedAddresses = [
     '0x6Ab63d3eff6DD73F0C68d26ef52CB50CDB757F57',
     // Twixt:
     '0x94531582b09aF4C04C159df566c2d1d39EC53815',
-    // :
-    '',
+    // Gus:
+    '0x293478d314bc925fc80d5af847fE15A14E5b380B',
     // :
     '',
     // :
