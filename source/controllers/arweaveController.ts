@@ -17,7 +17,7 @@ if (ENVIRONMENT === 'production') {
         host: 'arweave.net',
         protocol: 'https',
         port: 443,
-        timeout: 200000,     // Network request timeouts in milliseconds
+        timeout: 2000000,     // Network request timeouts in milliseconds
 
     })
     console.log('connected to Arweave mainnet. Careful, you\'re playing with real money here!');
