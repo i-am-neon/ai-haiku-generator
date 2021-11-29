@@ -30,10 +30,10 @@ export const whitelistedAddresses = [
     '0x293478d314bc925fc80d5af847fE15A14E5b380B',
     // shane:
     '0x5B4Df1AA89d8683f56667bFa59150b80e6923740',
-    // :
-    '',
-    // :
-    '',
+    // goji:
+    '0xFfEF648544198a1f8e8fF7591360Ea801ee681d0',
+    // dinordax:
+    '0x259c9B7a6D6bA8CA30B849719a7Ee4CE843E4DDE',
     // :
     '',
     // :
